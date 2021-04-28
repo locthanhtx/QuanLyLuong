@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-D:\Workspaces\Projects\QuanLyLuong\QuanLyLuong\SendMail\obj\Debug\
+D:\QuanLyLuong\SendMail\obj\Debug\
 SendMail
 none
 false
 DEBUG;TRACE
-D:\Workspaces\Projects\QuanLyLuong\QuanLyLuong\SendMail\App.xaml
+D:\QuanLyLuong\SendMail\App.xaml
 11151548125
 
-16-564225872
-18-680743518
+17-11839675
+18-1030534801
 MainWindow.xaml;
 
-False
+True
 

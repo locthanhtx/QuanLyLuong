@@ -1,7 +1,0 @@
-D:\Workspaces\Projects\QuanLyLuong\QuanLyLuong\EPPlus\bin\Release\EPPlus.XML
-D:\Workspaces\Projects\QuanLyLuong\QuanLyLuong\EPPlus\bin\Release\EPPlus.dll
-D:\Workspaces\Projects\QuanLyLuong\QuanLyLuong\EPPlus\bin\Release\EPPlus.pdb
-D:\Workspaces\Projects\QuanLyLuong\QuanLyLuong\EPPlus\obj\Release\EPPlus.csprojAssemblyReference.cache
-D:\Workspaces\Projects\QuanLyLuong\QuanLyLuong\EPPlus\obj\Release\EPPlus.csproj.CoreCompileInputs.cache
-D:\Workspaces\Projects\QuanLyLuong\QuanLyLuong\EPPlus\obj\Release\EPPlus.dll
-D:\Workspaces\Projects\QuanLyLuong\QuanLyLuong\EPPlus\obj\Release\EPPlus.pdb
