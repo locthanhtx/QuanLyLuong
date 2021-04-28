@@ -97,6 +97,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="Example\Báo cáo kinh Doanh Hùng Cường Tháng 03.2021.xlsx" />
+    <None Include="Example\Thang 03.xlsx" />
+    <None Include="Example\Thưởng NPP năm 2021.xlsx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
