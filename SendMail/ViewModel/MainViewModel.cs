@@ -4,11 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mail;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
 using Outlook = Microsoft.Office.Interop.Outlook;
-using Office = Microsoft.Office.Core;
-using System.Text;
 
 namespace SendMail.ViewModel
 {
@@ -100,30 +101,34 @@ namespace SendMail.ViewModel
                 return;
             }
 
-            Outlook.Application app = new Outlook.Application();
             try
             {
                 Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
 
+                string sig = ReadSignature();
+                Outlook.Application app = new Outlook.Application();
+
                 foreach (var user in _userInfo)
                 {
-                    //Outlook.MailItem mailItem = app.CreateItem(Outlook.OlItemType.olMailItem);
-                    //mailItem.Subject = user.subject;
+                    Outlook.MailItem mailItem = app.CreateItem(Outlook.OlItemType.olMailItem);
 
-                    //if (user.email.Count > 0)
-                    //{
-                    //    mailItem.To = string.Join(";", user.email.ToArray());
-                    //}
+                    if (user.email.Count > 0)
+                    {
+                        mailItem.To = string.Join(";", user.email.ToArray());
+                    }
 
-                    //mailItem.Body = user.content;
+                    mailItem.Subject = user.subject;
+                    user.content = user.content.Replace(System.Environment.NewLine, "<br>");
+                    mailItem.Body = user.content + "<br><br>" + sig;
 
-                    //foreach (var file in user.fileName)
-                    //{
-                    //    message.Attachments.Add(new Attachment(file));
-                    //}
+                    foreach (var file in user.fileName)
+                    {
+                        mailItem.Attachments.Add(file, Microsoft.Office.Interop.Outlook.OlAttachmentType.olByValue, Type.Missing, Type.Missing);
+                    }
 
+                    mailItem.HTMLBody = mailItem.Body;
+                    mailItem.Send();
                 }
-
                 Mouse.OverrideCursor = null;
             }
             catch (Exception sysEx)
@@ -136,6 +141,53 @@ namespace SendMail.ViewModel
                 Mouse.OverrideCursor = null;
             }
             MessageBox.Show("Xong Gồi", "Nhắc Nhở Bạn !!!");
+        }
+
+        private void CheckContentCommandExecute()
+        {
+            if (string.IsNullOrEmpty(_content))
+            {
+                MessageBox.Show("Vui Lòng Nhập Nội Dung Để Gửi Mail Nha Bạn... Pờ Ly", "Nhắc Nhở Bạn !!!");
+                return;
+            }
+
+            string temp = string.Empty;
+
+            foreach (var user in _userInfo)
+            {
+                string temp_content = string.Format(_content, user.hoTen);
+                user.content = temp_content;
+
+                temp += "Tiêu Đề: " + user.subject + System.Environment.NewLine + System.Environment.NewLine;
+                temp += user.content + System.Environment.NewLine + System.Environment.NewLine;
+                temp += "Được Gửi Tới: " + string.Join(";", user.email.ToArray()) + System.Environment.NewLine + System.Environment.NewLine;
+                temp += "File Đính Kèm: " + string.Join(";", user.fileName.ToArray()) + System.Environment.NewLine + System.Environment.NewLine;
+                temp += "----------------------------------------------------------------" + System.Environment.NewLine;
+            }
+
+            _content = temp;
+            hasCheck = true;
+            OnPropertyChanged(() => Content);
+        }
+        private void OpenFileCommandExecute()
+        {
+            // Stream myStream = null;
+            OpenFileDialog theDialog = new OpenFileDialog();
+            theDialog.Title = "Mở File Excel";
+            theDialog.Filter = "Excel Files(*.xlsm)|*.xlsm|Excel Files(.xlsx)|*.xlsx|Excel Files(.xls)|*.xls";
+            if (theDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    ProcessFileExcel(theDialog.FileName);
+                    _pathFile = theDialog.FileName;
+                    OnPropertyChanged(() => PathFile);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi Không Thể Mở File !!!!" + ex.Message, "Nhắc Nhở Bạn !!!");
+                }
+            }
         }
 
         private string ReadSignature()
@@ -163,53 +215,6 @@ namespace SendMail.ViewModel
             return signature;
         }
 
-        private void CheckContentCommandExecute()
-        {
-            if (string.IsNullOrEmpty(_content))
-            {
-                MessageBox.Show("Vui Lòng Nhập Nội Dung Để Gửi Mail Nha Bạn... Pờ Ly", "Nhắc Nhở Bạn !!!");
-                return;
-            }
-
-            string temp = string.Empty;
-
-            foreach(var user in _userInfo)
-            {
-                string temp_content = string.Format(_content, user.hoTen);
-                user.content = temp_content;
-
-                temp += "Tiêu Đề: " + user.subject + System.Environment.NewLine + System.Environment.NewLine;
-                temp += user.content + System.Environment.NewLine + System.Environment.NewLine;
-                temp += "Được Gửi Tới: " + string.Join(",", user.email.ToArray()) + System.Environment.NewLine + System.Environment.NewLine;
-                temp += "File Đính Kèm: " + string.Join(",", user.fileName.ToArray()) + System.Environment.NewLine + System.Environment.NewLine;
-                temp += "----------------------------------------------------------------" + System.Environment.NewLine;
-            }
-
-            _content = temp;
-            hasCheck = true;
-            OnPropertyChanged(() => Content);
-        }
-        private void OpenFileCommandExecute()
-        {
-            // Stream myStream = null;
-            OpenFileDialog theDialog = new OpenFileDialog();
-            theDialog.Title = "Mở File Excel";
-            theDialog.Filter = "Excel Files(.xlsx)|*.xlsx|Excel Files(*.xlsm) |*.xlsm|Excel Files(.xls)|*.xls";
-            if (theDialog.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    ProcessFileExcel(theDialog.FileName);
-                    _pathFile = theDialog.FileName;
-                    OnPropertyChanged(() => PathFile);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Lỗi Không Thể Mở File !!!!" + ex.Message, "Nhắc Nhở Bạn !!!");
-                }
-            }
-        }
-
         private void ProcessFileExcel(string fileName)
         {
             FileInfo existingFile = new FileInfo(fileName);
@@ -228,13 +233,13 @@ namespace SendMail.ViewModel
 
                 int rows = worksheet.Dimension.End.Row;
 
-                for (int row = 2; row <=rows; row++)
+                for (int row = 2; row <= rows; row++)
                 {
                     InfoUser user = new InfoUser();
                     user.hoTen = worksheet.Cells[row, colName].Value.ToString().Trim();
                     user.subject = worksheet.Cells[row, colSubject].Value.ToString().Trim();
-                    user.email = worksheet.Cells[row, colEmail].Value.ToString().Trim().Split(',').ToList();
-                    user.fileName = worksheet.Cells[row, colFileName].Value.ToString().Trim().Split(',').ToList();
+                    user.email = worksheet.Cells[row, colEmail].Value.ToString().Trim().Split(';').ToList();
+                    user.fileName = worksheet.Cells[row, colFileName].Value.ToString().Trim().Split(';').ToList();
 
                     _userInfo.Add(user);
                 }
